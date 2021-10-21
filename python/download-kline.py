@@ -34,6 +34,10 @@ def download_monthly_klines(trading_type, symbols, num_symbols, intervals, years
 
   print("Found {} symbols".format(num_symbols))
 
+  # Reverse the dates in place
+  years.reverse()
+  months.reverse()
+
   for symbol in symbols:
     print("[{}/{}] - start download monthly {} klines ".format(current+1, num_symbols, symbol))
     for interval in intervals:
@@ -53,6 +57,7 @@ def download_monthly_klines(trading_type, symbols, num_symbols, intervals, years
     current += 1
 
 def download_daily_klines(trading_type, symbols, num_symbols, intervals, dates, start_date, end_date, folder, checksum):
+  return_value = True
   current = 0
   date_range = None
 
@@ -81,14 +86,18 @@ def download_daily_klines(trading_type, symbols, num_symbols, intervals, dates, 
         if current_date >= start_date and current_date <= end_date:
           path = get_path(trading_type, "klines", "daily", symbol, interval)
           file_name = "{}-{}-{}.zip".format(symbol.upper(), interval, date)
-          download_file(path, file_name, date_range, folder)
+          return_value = download_file(path, file_name, date_range, folder)
 
           if checksum == 1:
             checksum_path = get_path(trading_type, "klines", "daily", symbol, interval)
             checksum_file_name = "{}-{}-{}.zip.CHECKSUM".format(symbol.upper(), interval, date)
-            download_file(checksum_path, checksum_file_name, date_range, folder)
+            return_value = download_file(checksum_path, checksum_file_name, date_range, folder)
+
+          if return_value == False:
+            break
 
     current += 1
+  return return_value
 
 if __name__ == "__main__":
     parser = get_parser('klines')
@@ -107,6 +116,10 @@ if __name__ == "__main__":
     else:
       dates = pd.date_range(end = datetime.today(), periods = MAX_DAYS).to_pydatetime().tolist()
       dates = [date.strftime("%Y-%m-%d") for date in dates]
+      # Reverse the dates in place
+      dates.reverse()
+      #download_monthly_klines(args.type, symbols, num_symbols, args.intervals, args.years, args.months, args.startDate, args.endDate, args.folder, args.checksum)
+    success = download_daily_klines(args.type, symbols, num_symbols, args.intervals, dates, args.startDate, args.endDate, args.folder, args.checksum)
+    if not args.dates and success == True:
       download_monthly_klines(args.type, symbols, num_symbols, args.intervals, args.years, args.months, args.startDate, args.endDate, args.folder, args.checksum)
-    download_daily_klines(args.type, symbols, num_symbols, args.intervals, dates, args.startDate, args.endDate, args.folder, args.checksum)
 
