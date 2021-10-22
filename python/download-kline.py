@@ -60,15 +60,6 @@ def download_monthly_klines(trading_type, symbols, num_symbols, intervals, years
                                                                                    '{:02d}'.format(month))
                             success = download_file(checksum_path, checksum_file_name, date_range, folder)
 
-                        if success == False:
-                            break
-
-                    if success == False:
-                        break
-
-                if success == False:
-                    break
-
         current += 1
 
 
