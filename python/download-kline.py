@@ -11,8 +11,7 @@ import sys
 from datetime import *
 import pandas as pd
 from enums import *
-from utility import download_file, get_all_symbols, get_parser, get_start_end_date_objects, convert_to_date_object, \
-    get_path
+from utility import download_file, get_all_symbols, get_parser, convert_to_date_object, get_path
 
 
 def download_monthly_klines(trading_type, symbols, num_symbols, intervals, years, months, start_date, end_date, folder,
@@ -44,6 +43,7 @@ def download_monthly_klines(trading_type, symbols, num_symbols, intervals, years
         if downloaded == False:
             continue
 
+        success = True
         print("[{}/{}] - start download monthly {} klines ".format(current + 1, num_symbols, symbol))
         for interval in intervals:
             for year in years:
@@ -52,13 +52,22 @@ def download_monthly_klines(trading_type, symbols, num_symbols, intervals, years
                     if current_date >= start_date and current_date <= end_date:
                         path = get_path(trading_type, "klines", "monthly", symbol, interval)
                         file_name = "{}-{}-{}-{}.zip".format(symbol.upper(), interval, year, '{:02d}'.format(month))
-                        download_file(path, file_name, date_range, folder)
+                        success = download_file(path, file_name, date_range, folder)
 
                         if checksum == 1:
                             checksum_path = get_path(trading_type, "klines", "monthly", symbol, interval)
                             checksum_file_name = "{}-{}-{}-{}.zip.CHECKSUM".format(symbol.upper(), interval, year,
                                                                                    '{:02d}'.format(month))
-                            download_file(checksum_path, checksum_file_name, date_range, folder)
+                            success = download_file(checksum_path, checksum_file_name, date_range, folder)
+
+                        if success == False:
+                            break
+
+                    if success == False:
+                        break
+
+                if success == False:
+                    break
 
         current += 1
 
@@ -86,7 +95,7 @@ def download_daily_klines(trading_type, symbols, num_symbols, intervals, dates, 
     print("Found {} symbols".format(num_symbols))
 
     for symbol in symbols:
-        return_value = True
+        success = True
         print("[{}/{}] - start download daily {} klines ".format(current + 1, num_symbols, symbol))
         for interval in intervals:
             for date in dates:
@@ -94,16 +103,16 @@ def download_daily_klines(trading_type, symbols, num_symbols, intervals, dates, 
                 if current_date >= start_date and current_date <= end_date:
                     path = get_path(trading_type, "klines", "daily", symbol, interval)
                     file_name = "{}-{}-{}.zip".format(symbol.upper(), interval, date)
-                    return_value = download_file(path, file_name, date_range, folder)
+                    success = download_file(path, file_name, date_range, folder)
 
                     if checksum == 1:
                         checksum_path = get_path(trading_type, "klines", "daily", symbol, interval)
                         checksum_file_name = "{}-{}-{}.zip.CHECKSUM".format(symbol.upper(), interval, date)
-                        return_value = download_file(checksum_path, checksum_file_name, date_range, folder)
+                        success = download_file(checksum_path, checksum_file_name, date_range, folder)
 
-                    downloaded_list.append(return_value)
+                    downloaded_list.append(success)
 
-                    if return_value == False:
+                    if success == False:
                         break
 
         current += 1
