@@ -55,6 +55,10 @@ SET SHELL_CMD=python download-kline.py -s WANUSDT WAVESUSDT WAXPUSDT WINGUSDT WI
 echo %SHELL_CMD%
 %SHELL_CMD%
 
+SET SHELL_CMD=python merge-monthly-with-daily-files.py
+echo %SHELL_CMD%
+%SHELL_CMD%
+
 REM SET SHELL_CMD=python download-kline.py -t cm -s DOGEUSD_PERP -i 1m -startDate %START_DATE% -endDate %END_DATE%
 REM echo %SHELL_CMD%
 REM %SHELL_CMD%
