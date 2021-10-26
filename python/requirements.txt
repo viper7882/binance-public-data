@@ -1,2 +1,6 @@
-pandas~=1.2.5
-pathlib~=1.0.1
+pandas>=1.2.5
+pathlib>=1.0.1
+dask>=2021.10.0
+vaex>=4.5.0
+ray>=1.7.1
+pyarrow>=5.0.0

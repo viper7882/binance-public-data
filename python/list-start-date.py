@@ -26,7 +26,7 @@ selected_columns = range(0, 6)
 start_dt_list = []
 for currency_pair in symbols:
     # Debugging Use
-    #currency_pair = "BTCUSDC"
+    #symbol_id = "BTCUSDC"
 
     INTERVAL_FILE_PATH = Path(os.path.join(BASE_DIR, currency_pair, "1m")).resolve()
     #pprint (INTERVAL_FILE_PATH)
