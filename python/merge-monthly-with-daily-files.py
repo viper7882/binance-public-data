@@ -56,7 +56,15 @@ specific_timeline_dict_template = {
     'total_indices'         : None,
     'last_row_dt_str'       : None,
     'open'                  : None,
+    # 'index_lookup'          : None,     # To be filled with list of index_lookup_dict
+    # 'opens'                 : None,       # To be filled with list of (index, open) tuple
 }
+
+# index_lookup_dict_template = {
+#     'index'             : None,
+#     'open_time_dt_str'  : None,
+# }
+
 
 overall_timeline_dict = copy.deepcopy(overall_timeline_dict_template)
 overall_timeline_dict['specific_timeline_dict'] = []
@@ -65,6 +73,7 @@ data_min_dt = datetime.datetime.utcnow()
 data_max_dt = datetime.datetime(1970, 1, 1)
 
 start = timer()
+ddf = None
 for symbol_id in monthly_symbols:
     monthly_interval_file_path = Path(os.path.join(monthly_base_dir, symbol_id, BINANCE_INTERVAL)).resolve()
     monthly_file_list = [f for f in os.listdir(monthly_interval_file_path) if
@@ -157,12 +166,30 @@ for symbol_id in monthly_symbols:
     if first_row_dt > data_max_dt:
         data_max_dt = first_row_dt
 
+    # if ddf is None:
+    #     ddf = dd.from_pandas(merged_df)
+    #
+    # # For row selection, we must select at least one column as column indexer. Hence the "Open" column is selected in
+    # # this case.
+    # df_open = ddf.iloc[:, [0]].compute()
+    #
+    # index_lookup_dict_list = []
+    # for i, open_time_dt_str in enumerate(df_open.index):
+    # #     index_lookup_dict = copy.deepcopy(index_lookup_dict_template)
+    # #     index_lookup_dict['index'] = i
+    # #     index_lookup_dict['open_time_dt_str'] = str(open_time_dt_str)
+    # #     index_lookup_dict_list.append(index_lookup_dict)
+    #
+    #     index_lookup_dict_list.append((str(open_time_dt_str), df_open[binance_columns[1]].iloc[i]))
+
     specific_timeline_dict = copy.deepcopy(specific_timeline_dict_template)
     specific_timeline_dict['symbol_id'] = symbol_id
     specific_timeline_dict['open'] = open_price
     specific_timeline_dict['first_row_dt_str'] = first_row_dt.strftime(DEFAULT_DATE_TIME_FORMAT)
     specific_timeline_dict['total_indices'] = total_indices
     specific_timeline_dict['last_row_dt_str'] = last_row_dt.strftime(DEFAULT_DATE_TIME_FORMAT)
+    #specific_timeline_dict['index_lookup'] = index_lookup_dict_list
+    # specific_timeline_dict['opens'] = index_lookup_dict_list
     overall_timeline_dict['specific_timeline_dict'].append(specific_timeline_dict)
 
     # # Debugging Use
