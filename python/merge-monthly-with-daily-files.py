@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import pandas as pd
 import dask.dataframe as dd
+from time import time as timer
 
 from pprint import pprint
 
@@ -21,7 +22,7 @@ BINANCE_BASE_DIR = "D:/Wecoz/github/binance-public-data/python/data"
 BINANCE_SPOT_MONTHLY_KLINES = BINANCE_BASE_DIR + "/spot/monthly/klines"
 BINANCE_SPOT_DAILY_KLINES = BINANCE_BASE_DIR + "/spot/daily/klines"
 BINANCE_SPOT_MERGED_KLINES = BINANCE_BASE_DIR + "/spot/merged/klines"
-TIMELINE_JSON_FILE_NAME = "timeline.json"
+DEFAULT_TIMELINE_JSON_FILE_NAME = "default_timeline.json"
 
 monthly_base_dir = Path(BINANCE_SPOT_MONTHLY_KLINES).resolve()
 daily_base_dir = Path(BINANCE_SPOT_DAILY_KLINES).resolve()
@@ -30,6 +31,12 @@ monthly_symbols = os.listdir(monthly_base_dir)
 daily_symbols = os.listdir(monthly_base_dir)
 
 assert monthly_symbols == daily_symbols
+
+def get_time_diff(start):
+    prog_time_diff = timer() - start
+    hours, rem = divmod(prog_time_diff, 3600)
+    minutes, seconds = divmod(rem, 60)
+    return hours, minutes, seconds
 
 def datetime_parse_timestamp(time_in_secs):
     return pd.to_datetime(time_in_secs, unit='ms')
@@ -57,6 +64,7 @@ overall_timeline_dict['specific_timeline_dict'] = []
 data_min_dt = datetime.datetime.utcnow()
 data_max_dt = datetime.datetime(1970, 1, 1)
 
+start = timer()
 for symbol_id in monthly_symbols:
     monthly_interval_file_path = Path(os.path.join(monthly_base_dir, symbol_id, BINANCE_INTERVAL)).resolve()
     monthly_file_list = [f for f in os.listdir(monthly_interval_file_path) if
@@ -131,11 +139,12 @@ for symbol_id in monthly_symbols:
 
         ddf = dd.read_csv(merged_file_path, blocksize=None)
         ddf[binance_columns[0]] = dd.to_datetime(ddf[binance_columns[0]])
+        ddf = ddf.set_index(binance_columns[0], sorted=True)
 
         # Contents to be stored into JSON file
-        open_price = ddf.loc[0, binance_columns[1]].compute().to_frame().iloc[0][binance_columns[1]]
-        first_row_dt = ddf.loc[0, binance_columns[0]].compute().to_frame().iloc[0][binance_columns[0]]
-        last_row_dt = ddf.loc[len(ddf.index) - 1, binance_columns[0]].compute().to_frame().iloc[0][binance_columns[0]]
+        first_row_dt = ddf.head(1).iloc[0].name
+        last_row_dt = ddf.tail(1).iloc[0].name
+        open_price = ddf.head(1)[binance_columns[1]].iloc[0]
         total_indices = len(ddf.index)
 
         # pprint(ddf.head())
@@ -163,8 +172,11 @@ overall_timeline_dict['data_min_dt_str'] = data_min_dt.strftime(DEFAULT_DATE_TIM
 overall_timeline_dict['data_max_dt_str'] = data_max_dt.strftime(DEFAULT_DATE_TIME_FORMAT)
 
 # pprint(overall_timeline_dict)
-timeline_file_path = os.path.join(merge_dir, TIMELINE_JSON_FILE_NAME)
+timeline_file_path = os.path.join(merge_dir, DEFAULT_TIMELINE_JSON_FILE_NAME)
 
 with open(timeline_file_path, "w") as outfile:
-    json.dump(overall_timeline_dict, outfile)
+    outfile.write("{}\n".format(json.dumps(overall_timeline_dict, indent=4, sort_keys=True).strip()))
     print("INFO: --> Saved {}".format(timeline_file_path))
+
+hours, minutes, seconds = get_time_diff(start)
+print("Spent: {}:{}:{:.2f}s".format(int(hours), int(minutes), seconds))
