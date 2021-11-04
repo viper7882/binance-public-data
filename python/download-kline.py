@@ -82,7 +82,7 @@ def download_daily_klines(trading_type, symbols, num_symbols, intervals, dates, 
         end_date = convert_to_date_object(end_date)
 
     # Get valid intervals for daily
-    intervals = list(set(intervals) & set(DAILY_INTERVALS))
+    intervals = list(set(intervals) & set(BINANCE_DAILY_INTERVALS))
     print("Found {} symbols".format(num_symbols))
 
     for symbol in symbols:

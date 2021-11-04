@@ -146,7 +146,7 @@ def get_parser(parser_type):
 
   if parser_type == 'klines':
     parser.add_argument(
-      '-i', dest='intervals', default=INTERVALS, nargs='+', choices=INTERVALS,
+      '-i', dest='intervals', default=BINANCE_INTERVALS, nargs='+', choices=BINANCE_INTERVALS,
       help='single kline interval or multiple intervals separated by space\n-i 1m 1w means to download klines interval of 1minute and 1week')
 
 

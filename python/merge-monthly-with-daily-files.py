@@ -1,4 +1,5 @@
 import os
+import sys
 import copy
 import datetime
 import json
@@ -9,9 +10,10 @@ from time import time as timer
 
 from pprint import pprint
 
-# Display all columns
-from enums import INTERVALS
+from enums import BINANCE_INTERVALS, BINANCE_DAILY_INTERVALS
+from utility import get_parser
 
+# Display all columns
 pd.set_option('display.max_columns', None)
 
 # Refer to https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
@@ -28,7 +30,8 @@ ZIP_FILE_NAME_EXTENSION = ".zip"
 PARQUET_FILE_NAME_EXTENSION = ".parquet"
 
 # WARNING: the list here has to match with -i in download_targeted_symbols.bat
-SELECTED_BINANCE_INTERVALS = [INTERVALS[0], INTERVALS[2], INTERVALS[4], INTERVALS[6]]
+SELECTED_BINANCE_INTERVALS = [BINANCE_INTERVALS[0], BINANCE_INTERVALS[2], BINANCE_INTERVALS[4], BINANCE_INTERVALS[6],
+                              BINANCE_INTERVALS[8], BINANCE_INTERVALS[10]]
 BINANCE_BASE_DIR = "D:/Wecoz/github/binance-public-data/python/data"
 BINANCE_SPOT_MONTHLY_KLINES = BINANCE_BASE_DIR + "/spot/monthly/klines"
 BINANCE_SPOT_DAILY_KLINES = BINANCE_BASE_DIR + "/spot/daily/klines"
@@ -77,7 +80,19 @@ specific_timeline_dict_template = {
 # }
 
 start = timer()
-for selected_binance_interval in SELECTED_BINANCE_INTERVALS:
+
+parser = get_parser('klines')
+args = parser.parse_args(sys.argv[1:])
+
+# Get valid user_intervals for daily
+user_intervals = list(set(args.intervals) & set(BINANCE_DAILY_INTERVALS))
+
+# print("user_intervals:")
+# pprint(user_intervals)
+#
+# sys.exit(1)
+
+for selected_binance_interval in user_intervals:
     overall_timeline_dict = copy.deepcopy(overall_timeline_dict_template)
     overall_timeline_dict['specific_timeline_dict'] = []
 
